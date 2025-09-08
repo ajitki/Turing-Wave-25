@@ -1,0 +1,27 @@
+name: Deploy to Azure Storage Static Website (SAS)
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      BUILD_DIR: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: 'npm' }
+      - run: |
+          npm ci
+          npm run build
+      - uses: azure/cli@v2
+        with:
+          inlineScript: |
+            ST=${{ secrets.AZURE_STORAGE_ACCOUNT }}
+            SAS='${{ secrets.AZURE_SAS_TOKEN }}'
+
+            az storage blob delete-batch --account-name "$ST" --sas-token "$SAS" -s '$web' || true
+            az storage blob upload-batch --account-name "$ST" --sas-token "$SAS" -d '$web' -s "${BUILD_DIR}" --overwrite
