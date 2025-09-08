@@ -13,10 +13,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: 20, cache: 'npm' }
+        with: { node-version: 18, cache: 'npm' }
       - run: |
           npm ci
-          npm run build
+          npx --yes react-scripts@5.0.1 build
       - uses: azure/cli@v2
         with:
           inlineScript: |
